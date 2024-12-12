@@ -19,3 +19,9 @@ class MUNSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         return MUN.objects.create(**validated_data)
+
+class MUNListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MUN
+        fields = ['id', 'event_name', 'date', 'venue', 'registration_fees']
+

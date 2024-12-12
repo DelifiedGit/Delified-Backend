@@ -3,8 +3,10 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
-from .serializers import UserSerializer, MUNSerializer
+from .serializers import UserSerializer, MUNSerializer, MUNListSerializer
 from rest_framework.permissions import IsAuthenticated
+from rest_framework import generics
+from .models import MUN
 
 class SignupView(APIView):
     def post(self, request):
@@ -34,3 +36,12 @@ class CreateMUNView(APIView):
             serializer.save(creator=request.user)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class MUNListView(generics.ListAPIView):
+    queryset = MUN.objects.all()
+    serializer_class = MUNListSerializer
+
+class MUNDetailView(generics.RetrieveAPIView):
+    queryset = MUN.objects.all()
+    serializer_class = MUNSerializer
+
