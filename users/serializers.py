@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import CustomUser
+from .models import CustomUser, MUN
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -10,3 +10,12 @@ class UserSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         user = CustomUser.objects.create_user(**validated_data)
         return user
+
+class MUNSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MUN
+        fields = ['id', 'event_name', 'date', 'venue', 'registration_fees', 'custom_fields']
+        read_only_fields = ['id']
+
+    def create(self, validated_data):
+        return MUN.objects.create(**validated_data)

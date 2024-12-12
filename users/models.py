@@ -12,3 +12,14 @@ class CustomUser(AbstractUser):
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username', 'full_name']
+
+class MUN(models.Model):
+    creator = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    event_name = models.CharField(max_length=255)
+    date = models.DateField()
+    venue = models.CharField(max_length=255)
+    registration_fees = models.DecimalField(max_digits=10, decimal_places=2)
+    custom_fields = models.JSONField(default=dict)
+
+    def __str__(self):
+        return self.event_name
