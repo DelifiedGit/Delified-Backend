@@ -14,7 +14,7 @@ class UserSerializer(serializers.ModelSerializer):
 class MUNSerializer(serializers.ModelSerializer):
     class Meta:
         model = MUN
-        fields = ['id', 'event_name', 'date', 'venue', 'registration_fees', 'custom_fields']
+        fields = ['id', 'event_name', 'date', 'venue', 'description' ,'registration_fees', 'custom_fields']
         read_only_fields = ['id']
 
     def create(self, validated_data):

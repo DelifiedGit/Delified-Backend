@@ -81,7 +81,7 @@ WSGI_APPLICATION = 'delified_project.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'Delified-db',
+        'NAME': 'DelifiedDB',
         'USER': 'postgres',
         'PASSWORD': 'postgres',
         'HOST': 'localhost',
