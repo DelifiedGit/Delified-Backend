@@ -18,7 +18,7 @@ class MUN(models.Model):
     event_name = models.CharField(max_length=255)
     date = models.DateField()
     venue = models.CharField(max_length=255)
-    description = models.CharField(max_length=255)
+    description = models.CharField(max_length=500)
     registration_fees = models.DecimalField(max_digits=10, decimal_places=2)
     custom_fields = models.JSONField(default=dict)
 
