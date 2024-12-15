@@ -88,15 +88,31 @@ class DashboardView(APIView):
         user = request.user
         now = timezone.now()
 
-        registered_muns = MUN.objects.filter(registration__user=user, date__gte=now)
-        past_muns = MUN.objects.filter(registration__user=user, date__lt=now)
-        upcoming_muns = MUN.objects.filter(date__gte=now).exclude(id__in=registered_muns.values_list('id', flat=True))
+        registered_muns = MUN.objects.filter(
+            registration__user=user, 
+            date__gte=now
+        ).distinct().values('id', 'event_name', 'date', 'venue')
+
+        past_muns = MUN.objects.filter(
+            registration__user=user, 
+            date__lt=now
+        ).distinct().values('id', 'event_name', 'date', 'venue')
+
+        upcoming_muns = MUN.objects.filter(
+            date__gte=now
+        ).exclude(
+            id__in=registered_muns.values_list('id', flat=True)
+        ).values('id', 'event_name', 'date', 'venue')[:5]  # Limit to 5 upcoming MUNs
 
         dashboard_data = {
-            'user': user,
-            'past_muns': past_muns,
-            'registered_muns': registered_muns,
-            'upcoming_muns': upcoming_muns[:5]  # Limit to 5 upcoming MUNs
+            'user': {
+                'full_name': user.full_name,  # Assuming the user model has a full_name field
+                'email': user.email,
+                'institution': user.institution
+            },
+            'past_muns': list(past_muns),
+            'registered_muns': list(registered_muns),
+            'upcoming_muns': list(upcoming_muns)
         }
 
         serializer = DashboardDataSerializer(dashboard_data)
