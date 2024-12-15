@@ -66,6 +66,9 @@ class RegistrationDetailView(generics.RetrieveAPIView):
     serializer_class = RegistrationSerializer
     permission_classes = [IsAuthenticated]
 
+    def get_queryset(self):
+        return Registration.objects.filter(user=self.request.user)
+
 class PaymentView(APIView):
     permission_classes = [IsAuthenticated]
 
