@@ -43,3 +43,20 @@ class PaymentSerializer(serializers.ModelSerializer):
         model = Payment
         fields = ['id', 'amount', 'status']
         read_only_fields = ['id', 'status']
+
+
+class UserProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ['full_name', 'email', 'institution']
+
+class DashboardMUNSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MUN
+        fields = ['id', 'event_name', 'date', 'venue']
+
+class DashboardDataSerializer(serializers.Serializer):
+    user = UserProfileSerializer()
+    past_muns = DashboardMUNSerializer(many=True)
+    registered_muns = DashboardMUNSerializer(many=True)
+    upcoming_muns = DashboardMUNSerializer(many=True)

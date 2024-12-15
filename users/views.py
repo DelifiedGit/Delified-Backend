@@ -3,10 +3,11 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
-from .serializers import UserSerializer, MUNSerializer, MUNListSerializer, RegistrationSerializer, PaymentSerializer
+from .serializers import UserSerializer, MUNSerializer, MUNListSerializer, RegistrationSerializer, PaymentSerializer, DashboardDataSerializer
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import generics
 from .models import MUN, Registration, Payment
+from django.utils import timezone
 
 class SignupView(APIView):
     def post(self, request):
@@ -78,3 +79,26 @@ class PaymentView(APIView):
             payment = serializer.save(user=request.user)
             return Response({'payment_id': payment.id}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+class DashboardView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        now = timezone.now()
+
+        registered_muns = MUN.objects.filter(registration__user=user, date__gte=now)
+        past_muns = MUN.objects.filter(registration__user=user, date__lt=now)
+        upcoming_muns = MUN.objects.filter(date__gte=now).exclude(id__in=registered_muns.values_list('id', flat=True))
+
+        dashboard_data = {
+            'user': user,
+            'past_muns': past_muns,
+            'registered_muns': registered_muns,
+            'upcoming_muns': upcoming_muns[:5]  # Limit to 5 upcoming MUNs
+        }
+
+        serializer = DashboardDataSerializer(dashboard_data)
+        return Response(serializer.data)
+
