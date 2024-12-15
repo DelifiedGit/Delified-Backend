@@ -3,10 +3,10 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
-from .serializers import UserSerializer, MUNSerializer, MUNListSerializer, RegistrationSerializer
+from .serializers import UserSerializer, MUNSerializer, MUNListSerializer, RegistrationSerializer, PaymentSerializer
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import generics
-from .models import MUN, Registration
+from .models import MUN, Registration, Payment
 
 class SignupView(APIView):
     def post(self, request):
@@ -49,9 +49,15 @@ class RegistrationView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
+        payment_id = request.data.get('payment_id')
+        try:
+            payment = Payment.objects.get(id=payment_id, user=request.user)
+        except Payment.DoesNotExist:
+            return Response({'error': 'Invalid payment ID'}, status=status.HTTP_400_BAD_REQUEST)
+
         serializer = RegistrationSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save(user=request.user)
+            registration = serializer.save(user=request.user, payment=payment)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -64,7 +70,8 @@ class PaymentView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        # Implement payment processing logic here
-        # For now, we'll just return a success response
-        return Response({'status': 'success'}, status=status.HTTP_200_OK)
-
+        serializer = PaymentSerializer(data=request.data)
+        if serializer.is_valid():
+            payment = serializer.save(user=request.user)
+            return Response({'payment_id': payment.id}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

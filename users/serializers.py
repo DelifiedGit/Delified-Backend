@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import CustomUser, MUN, Registration
+from .models import CustomUser, MUN, Registration, Payment
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -26,7 +26,14 @@ class MUNListSerializer(serializers.ModelSerializer):
         fields = ['id', 'event_name', 'date', 'venue', 'registration_fees']
 
 class RegistrationSerializer(serializers.ModelSerializer):
+    payment_id = serializers.PrimaryKeyRelatedField(queryset=Payment.objects.all(), source='payment')
+
     class Meta:
         model = Registration
-        fields = ['id', 'mun','custom_fields']
+        fields = ['id', 'mun', 'payment_id', 'custom_fields']
 
+class PaymentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Payment
+        fields = ['id', 'amount', 'status']
+        read_only_fields = ['id', 'status']
