@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import CustomUser, MUN
+from .models import CustomUser, MUN, Registration
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -24,4 +24,9 @@ class MUNListSerializer(serializers.ModelSerializer):
     class Meta:
         model = MUN
         fields = ['id', 'event_name', 'date', 'venue', 'registration_fees']
+
+class RegistrationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Registration
+        fields = ['id', 'mun','custom_fields']
 

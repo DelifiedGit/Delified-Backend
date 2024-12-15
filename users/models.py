@@ -22,7 +22,15 @@ class MUN(models.Model):
     registration_fees = models.DecimalField(max_digits=10, decimal_places=2)
     custom_fields = models.JSONField(default=dict)
 
-
-
     def __str__(self):
         return self.event_name
+
+class Registration(models.Model):
+    mun = models.ForeignKey(MUN, on_delete=models.CASCADE)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    custom_fields = models.JSONField(default=dict)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.mun.event_name}"
+
