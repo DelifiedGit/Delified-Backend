@@ -31,7 +31,6 @@ class MUNMinimalSerializer(serializers.ModelSerializer):
         fields = ['id', 'event_name']
 
 class RegistrationSerializer(serializers.ModelSerializer):
-    mun = MUNMinimalSerializer(read_only=True)
     payment_id = serializers.PrimaryKeyRelatedField(queryset=Payment.objects.all(), source='payment')
 
     class Meta:
