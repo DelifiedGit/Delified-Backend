@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import CustomUser, MUN, Registration, Payment
+from .models import CustomUser, MUN, Registration, Payment, Community, Post, Event
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -31,7 +31,7 @@ class MUNMinimalSerializer(serializers.ModelSerializer):
         fields = ['id', 'event_name']
 
 class RegistrationSerializer(serializers.ModelSerializer):
-    mun = MUNMinimalSerializer(read_only=True)
+    
     payment_id = serializers.PrimaryKeyRelatedField(queryset=Payment.objects.all(), source='payment')
 
     class Meta:
@@ -60,3 +60,27 @@ class DashboardDataSerializer(serializers.Serializer):
     past_muns = DashboardMUNSerializer(many=True)
     registered_muns = DashboardMUNSerializer(many=True)
     upcoming_muns = DashboardMUNSerializer(many=True)
+
+
+class CommunitySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Community
+        fields = ['id', 'name', 'description', 'creator', 'members', 'created_at']
+        read_only_fields = ['id', 'creator', 'members', 'created_at']
+
+class PostSerializer(serializers.ModelSerializer):
+    author_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Post
+        fields = ['id', 'author', 'author_name', 'community', 'content', 'created_at']
+        read_only_fields = ['id', 'author', 'created_at']
+
+    def get_author_name(self, obj):
+        return obj.author.username
+
+class EventSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Event
+        fields = ['id', 'community', 'name', 'date', 'description']
+        read_only_fields = ['id']

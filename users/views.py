@@ -3,10 +3,15 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
-from .serializers import UserSerializer, MUNSerializer, MUNListSerializer, RegistrationSerializer, PaymentSerializer, DashboardDataSerializer
+
+from .serializers import (
+    UserSerializer, MUNSerializer, MUNListSerializer, RegistrationSerializer, 
+    PaymentSerializer, DashboardDataSerializer, CommunitySerializer, 
+    PostSerializer, EventSerializer
+)
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import generics
-from .models import MUN, Registration, Payment
+from .models import MUN, Registration, Payment, Community, Post, Event
 from django.utils import timezone
 
 class SignupView(APIView):
@@ -117,4 +122,93 @@ class DashboardView(APIView):
 
         serializer = DashboardDataSerializer(dashboard_data)
         return Response(serializer.data)
+    
+class CommunityListCreateView(generics.ListCreateAPIView):
+    queryset = Community.objects.all()
+    serializer_class = CommunitySerializer
+    permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+        serializer.save(creator=self.request.user)
+
+    def get_queryset(self):
+        queryset = Community.objects.all()
+        joined = self.request.query_params.get('joined', None)
+        if joined is not None:
+            queryset = queryset.filter(members=self.request.user)
+        return queryset
+
+class CommunityRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Community.objects.all()
+    serializer_class = CommunitySerializer
+    permission_classes = [IsAuthenticated]
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if instance.creator != request.user:
+            return Response({"error": "You are not allowed to update this community"}, status=status.HTTP_403_FORBIDDEN)
+        return super().update(request, *args, **kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if instance.creator != request.user:
+            return Response({"error": "You are not allowed to delete this community"}, status=status.HTTP_403_FORBIDDEN)
+        return super().destroy(request, *args, **kwargs)
+
+class CommunityJoinView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, pk):
+        try:
+            community = Community.objects.get(pk=pk)
+        except Community.DoesNotExist:
+            return Response({"error": "Community not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        if request.user in community.members.all():
+            return Response({"error": "You are already a member of this community"}, status=status.HTTP_400_BAD_REQUEST)
+
+        community.members.add(request.user)
+        return Response({"success": "You have joined the community"}, status=status.HTTP_200_OK)
+
+class PostListCreateView(generics.ListCreateAPIView):
+    queryset = Post.objects.filter(community__isnull=True)
+    serializer_class = PostSerializer
+    permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
+
+class CommunityPostListCreateView(generics.ListCreateAPIView):
+    serializer_class = PostSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        community_id = self.kwargs['community_id']
+        return Post.objects.filter(community_id=community_id)
+
+    def perform_create(self, serializer):
+        community_id = self.kwargs['community_id']
+        community = Community.objects.get(pk=community_id)
+        serializer.save(author=self.request.user, community=community)
+
+class CommunityMemberListView(generics.ListAPIView):
+    serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        community_id = self.kwargs['community_id']
+        return Community.objects.get(pk=community_id).members.all()
+
+class CommunityEventListCreateView(generics.ListCreateAPIView):
+    serializer_class = EventSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        community_id = self.kwargs['community_id']
+        return Event.objects.filter(community_id=community_id)
+
+    def perform_create(self, serializer):
+        community_id = self.kwargs['community_id']
+        community = Community.objects.get(pk=community_id)
+        serializer.save(community=community)
 

@@ -43,3 +43,31 @@ class Registration(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.mun.event_name}"
+    
+class Community(models.Model):
+    name = models.CharField(max_length=255)
+    description = models.TextField()
+    creator = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='created_communities')
+    members = models.ManyToManyField(CustomUser, related_name='joined_communities')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
+
+class Post(models.Model):
+    author = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    community = models.ForeignKey(Community, on_delete=models.CASCADE, null=True, blank=True)
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.author.username}'s post in {self.community.name if self.community else 'General Feed'}"
+
+class Event(models.Model):
+    community = models.ForeignKey(Community, on_delete=models.CASCADE, related_name='events')
+    name = models.CharField(max_length=255)
+    date = models.DateTimeField()
+    description = models.TextField()
+
+    def __str__(self):
+        return f"{self.name} in {self.community.name}"
