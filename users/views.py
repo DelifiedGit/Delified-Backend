@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
+from rest_framework.pagination import PageNumberPagination
 
 from .serializers import (
     UserSerializer, MUNSerializer, MUNListSerializer, RegistrationSerializer, 
@@ -211,4 +212,15 @@ class CommunityEventListCreateView(generics.ListCreateAPIView):
         community_id = self.kwargs['community_id']
         community = Community.objects.get(pk=community_id)
         serializer.save(community=community)
+
+
+class CommunityPostListView(generics.ListAPIView):
+    serializer_class = PostSerializer
+    permission_classes = [IsAuthenticated]
+    pagination_class = PageNumberPagination
+
+    def get_queryset(self):
+        community_id = self.kwargs['community_id']
+        return Post.objects.filter(community_id=community_id).order_by('-created_at')
+
 

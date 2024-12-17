@@ -3,7 +3,7 @@ from .views import (
     SignupView, LoginView, CreateMUNView, MUNListView, MUNDetailView, 
     RegistrationView, RegistrationDetailView, PaymentView, DashboardView,
     CommunityListCreateView, CommunityRetrieveUpdateDestroyView, CommunityJoinView,
-    PostListCreateView, CommunityPostListCreateView, CommunityMemberListView,
+    PostListCreateView, CommunityPostListCreateView, CommunityMemberListView, CommunityPostListView,
     CommunityEventListCreateView
 )
 urlpatterns = [
@@ -23,5 +23,6 @@ urlpatterns = [
     path('communities/<int:community_id>/posts/', CommunityPostListCreateView.as_view(), name='community_post_list_create'),
     path('communities/<int:community_id>/members/', CommunityMemberListView.as_view(), name='community_member_list'),
     path('communities/<int:community_id>/events/', CommunityEventListCreateView.as_view(), name='community_event_list_create'),
+    path('communities/<int:community_id>/posts/', CommunityPostListView.as_view(), name='community_post_list'),
 ]
 
