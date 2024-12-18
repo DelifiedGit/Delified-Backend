@@ -4,7 +4,7 @@ from .views import (
     RegistrationView, RegistrationDetailView, PaymentView, DashboardView,
     CommunityListCreateView, CommunityRetrieveUpdateDestroyView, CommunityJoinView,
     PostListCreateView, CommunityPostListCreateView, CommunityMemberListView, CommunityPostListView,
-    CommunityEventListCreateView
+    CommunityEventListCreateView, PostLikeView, CommentListCreateView,
 )
 urlpatterns = [
     path('signup/', SignupView.as_view(), name='signup'),
@@ -24,5 +24,7 @@ urlpatterns = [
     path('communities/<int:community_id>/members/', CommunityMemberListView.as_view(), name='community_member_list'),
     path('communities/<int:community_id>/events/', CommunityEventListCreateView.as_view(), name='community_event_list_create'),
     path('communities/<int:community_id>/posts/', CommunityPostListView.as_view(), name='community_post_list'),
+    path('posts/<int:pk>/like/', PostLikeView.as_view(), name='post_like'),
+    path('posts/<int:post_id>/comments/', CommentListCreateView.as_view(), name='comment_list_create'),
 ]
 

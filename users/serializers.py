@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import CustomUser, MUN, Registration, Payment, Community, Post, Event
+from .models import CustomUser, MUN, Registration, Payment, Community, Post, Event, Comment
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -84,3 +84,36 @@ class EventSerializer(serializers.ModelSerializer):
         model = Event
         fields = ['id', 'community', 'name', 'date', 'description']
         read_only_fields = ['id']
+
+class CommentSerializer(serializers.ModelSerializer):
+    author_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Comment
+        fields = ['id', 'author', 'author_name', 'post', 'content', 'created_at']
+        read_only_fields = ['id', 'author', 'created_at']
+
+    def get_author_name(self, obj):
+        return obj.author.username
+
+class PostSerializer(serializers.ModelSerializer):
+    author_name = serializers.SerializerMethodField()
+    likes_count = serializers.SerializerMethodField()
+    comments = CommentSerializer(many=True, read_only=True)
+    is_liked = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Post
+        fields = ['id', 'author', 'author_name', 'community', 'content', 'created_at', 'likes_count', 'comments', 'is_liked']
+        read_only_fields = ['id', 'author', 'created_at', 'likes_count', 'comments', 'is_liked']
+
+    def get_author_name(self, obj):
+        return obj.author.username
+
+    def get_likes_count(self, obj):
+        return obj.likes.count()
+
+    def get_is_liked(self, obj):
+        user = self.context['request'].user
+        return user in obj.likes.all()
+

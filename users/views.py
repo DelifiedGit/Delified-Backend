@@ -8,11 +8,11 @@ from rest_framework.pagination import PageNumberPagination
 from .serializers import (
     UserSerializer, MUNSerializer, MUNListSerializer, RegistrationSerializer, 
     PaymentSerializer, DashboardDataSerializer, CommunitySerializer, 
-    PostSerializer, EventSerializer
+    PostSerializer, EventSerializer, PostSerializer, CommentSerializer
 )
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import generics
-from .models import MUN, Registration, Payment, Community, Post, Event
+from .models import MUN, Registration, Payment, Community, Post, Event, Comment
 from django.utils import timezone
 
 class SignupView(APIView):
@@ -222,5 +222,47 @@ class CommunityPostListView(generics.ListAPIView):
     def get_queryset(self):
         community_id = self.kwargs['community_id']
         return Post.objects.filter(community_id=community_id).order_by('-created_at')
+    
+
+class CommunityPostListView(generics.ListAPIView):
+    serializer_class = PostSerializer
+    permission_classes = [IsAuthenticated]
+    pagination_class = PageNumberPagination
+
+    def get_queryset(self):
+        community_id = self.kwargs['community_id']
+        return Post.objects.filter(community_id=community_id).order_by('-created_at')
+
+
+class PostLikeView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, pk):
+        try:
+            post = Post.objects.get(pk=pk)
+        except Post.DoesNotExist:
+            return Response({"error": "Post not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        if request.user in post.likes.all():
+            post.likes.remove(request.user)
+            return Response({"liked": False}, status=status.HTTP_200_OK)
+        else:
+            post.likes.add(request.user)
+            return Response({"liked": True}, status=status.HTTP_200_OK)
+
+class CommentListCreateView(generics.ListCreateAPIView):
+    serializer_class = CommentSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        post_id = self.kwargs['post_id']
+        return Comment.objects.filter(post_id=post_id)
+
+    def perform_create(self, serializer):
+        post_id = self.kwargs['post_id']
+        post = Post.objects.get(pk=post_id)
+        serializer.save(author=self.request.user, post=post)
+
+
 
 
