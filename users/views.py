@@ -127,7 +127,12 @@ class DashboardView(APIView):
 class CommunityListCreateView(generics.ListCreateAPIView):
     queryset = Community.objects.all()
     serializer_class = CommunitySerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = []  # Allow unauthenticated access for GET
+
+    def get_permissions(self):
+        if self.request.method == 'POST':
+            return [IsAuthenticated()]
+        return []
 
     def perform_create(self, serializer):
         serializer.save(creator=self.request.user)
@@ -135,9 +140,10 @@ class CommunityListCreateView(generics.ListCreateAPIView):
     def get_queryset(self):
         queryset = Community.objects.all()
         joined = self.request.query_params.get('joined', None)
-        if joined is not None:
+        if joined is not None and self.request.user.is_authenticated:
             queryset = queryset.filter(members=self.request.user)
         return queryset
+
 
 class CommunityRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Community.objects.all()
@@ -174,10 +180,17 @@ class CommunityJoinView(APIView):
 class PostListCreateView(generics.ListCreateAPIView):
     queryset = Post.objects.filter(community__isnull=True)
     serializer_class = PostSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = []  # Allow unauthenticated access for GET
+
+    def get_permissions(self):
+        if self.request.method == 'POST':
+            return [IsAuthenticated()]
+        return []
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
+
+
 
 class CommunityPostListCreateView(generics.ListCreateAPIView):
     serializer_class = PostSerializer
@@ -222,7 +235,6 @@ class CommunityPostListView(generics.ListAPIView):
     def get_queryset(self):
         community_id = self.kwargs['community_id']
         return Post.objects.filter(community_id=community_id).order_by('-created_at')
-    
 
 class CommunityPostListView(generics.ListAPIView):
     serializer_class = PostSerializer
@@ -262,6 +274,7 @@ class CommentListCreateView(generics.ListCreateAPIView):
         post_id = self.kwargs['post_id']
         post = Post.objects.get(pk=post_id)
         serializer.save(author=self.request.user, post=post)
+
 
 
 

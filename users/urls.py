@@ -26,5 +26,8 @@ urlpatterns = [
     path('communities/<int:community_id>/posts/', CommunityPostListView.as_view(), name='community_post_list'),
     path('posts/<int:pk>/like/', PostLikeView.as_view(), name='post_like'),
     path('posts/<int:post_id>/comments/', CommentListCreateView.as_view(), name='comment_list_create'),
+    path('posts/<int:pk>/like/', PostLikeView.as_view(), name='post_like'),
+    path('posts/<int:post_id>/comments/', CommentListCreateView.as_view(), name='comment_list_create'),
+
 ]
 
