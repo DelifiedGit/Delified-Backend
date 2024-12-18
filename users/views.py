@@ -8,11 +8,11 @@ from rest_framework.pagination import PageNumberPagination
 from .serializers import (
     UserSerializer, MUNSerializer, MUNListSerializer, RegistrationSerializer, 
     PaymentSerializer, DashboardDataSerializer, CommunitySerializer, 
-    PostSerializer, EventSerializer, PostSerializer, CommentSerializer
+    PostSerializer, EventSerializer, PostSerializer, CommentSerializer, ContactMessageSerializer
 )
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework import generics
-from .models import MUN, Registration, Payment, Community, Post, Event, Comment
+from .models import MUN, Registration, Payment, Community, Post, Event, Comment,  ContactMessage
 from django.utils import timezone
 
 class SignupView(APIView):
@@ -276,6 +276,13 @@ class CommentListCreateView(generics.ListCreateAPIView):
         serializer.save(author=self.request.user, post=post)
 
 
+class ContactMessageView(APIView):
+    permission_classes = [AllowAny]
 
-
+    def post(self, request):
+        serializer = ContactMessageSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "Your message has been sent successfully."}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

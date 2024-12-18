@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import CustomUser, MUN, Registration, Payment, Community, Post, Event, Comment
+from .models import CustomUser, MUN, Registration, Payment, Community, Post, Event, Comment, ContactMessage
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -117,3 +117,8 @@ class PostSerializer(serializers.ModelSerializer):
         user = self.context['request'].user
         return user in obj.likes.all()
 
+class ContactMessageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ContactMessage
+        fields = ['id', 'name', 'email', 'subject', 'message', 'created_at']
+        read_only_fields = ['id', 'created_at']
