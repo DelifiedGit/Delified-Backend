@@ -30,19 +30,18 @@ class MUNMinimalSerializer(serializers.ModelSerializer):
         model = MUN
         fields = ['id', 'event_name']
 
-class RegistrationSerializer(serializers.ModelSerializer):
-    
-    payment_id = serializers.PrimaryKeyRelatedField(queryset=Payment.objects.all(), source='payment')
-
-    class Meta:
-        model = Registration
-        fields = ['id', 'mun', 'payment_id', 'custom_fields']
 
 class PaymentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Payment
         fields = ['id', 'amount', 'status']
-        read_only_fields = ['id', 'status']
+
+class RegistrationSerializer(serializers.ModelSerializer):
+    payment = PaymentSerializer(read_only=True)
+
+    class Meta:
+        model = Registration
+        fields = ['id', 'mun', 'payment', 'custom_fields']
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
@@ -122,3 +121,4 @@ class ContactMessageSerializer(serializers.ModelSerializer):
         model = ContactMessage
         fields = ['id', 'name', 'email', 'subject', 'message', 'created_at']
         read_only_fields = ['id', 'created_at']
+

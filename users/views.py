@@ -65,6 +65,8 @@ class RegistrationView(APIView):
         serializer = RegistrationSerializer(data=request.data)
         if serializer.is_valid():
             registration = serializer.save(user=request.user, payment=payment)
+            payment.status = 'completed'
+            payment.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -82,7 +84,7 @@ class PaymentView(APIView):
     def post(self, request):
         serializer = PaymentSerializer(data=request.data)
         if serializer.is_valid():
-            payment = serializer.save(user=request.user)
+            payment = serializer.save(user=request.user, status='pending')
             return Response({'payment_id': payment.id}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
